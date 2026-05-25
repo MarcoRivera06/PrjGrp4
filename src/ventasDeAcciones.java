@@ -1,10 +1,5 @@
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -60,7 +55,7 @@ public class ventasDeAcciones {
     private String usuarioActual = "";
     private String passwordActual = "";
     private double saldoEfectivo = 10000.0;
-    private int dia = 1;
+    private int dia = 0;
 
     private final Map<String, Activo> mercado = new HashMap<>();
     private final String ARCHIVO_DB = "usuarios.txt";
@@ -81,11 +76,8 @@ public class ventasDeAcciones {
 
         do{
             System.out.println("=================================================================");
-            System.out.println("Inicio: ");
-            System.out.println("0. Salir");
-            System.out.println("1. Iniciar Simulacion");
-            System.out.println("2. Ver informacion de tu Usuario");
-            System.out.println("3. Crear usuario");
+            System.out.println("0.- Salir");
+            System.out.println("1.- Inicio");
             System.out.print("Elige una opcion: ");
             opc = teclado.nextLine().trim();
             System.out.println("=================================================================");
@@ -96,9 +88,8 @@ public class ventasDeAcciones {
                     return;
                 }
                 case "1" -> {
-                    System.out.println("=================================================================");
-                    System.out.println(" SIMULACION DE INVERSION EN ACCIONES ");
-                    System.out.println("=================================================================");
+
+                    System.out.println("Inicio de sesion: ");
                     System.out.print("Ingrese su nombre de usuario: ");
                     usuarioActual = teclado.nextLine();
 
@@ -106,119 +97,131 @@ public class ventasDeAcciones {
                         System.out.println("\n [SEGURIDAD]: Regresando al menú principal...");
                         break;
                     }
+    //ACABA AUTENTICACION
+                    String opcion;
+                    do{
+                        System.out.println("");
+                        System.out.println("0.- Salir");
+                        System.out.println("1.- Iniciar simulador");
+                        System.out.println("2.- Ver tu portafolio");
+                        System.out.print("Eliga una opcion: ");
+                        opcion = teclado.nextLine().trim();
+                        switch(opcion){
+                            case "0" -> {System.out.println("Saliendo al menu anterior. . ."); break;}
+                            case "1" -> {
+                                    ScheduledExecutorService reloj = Executors.newScheduledThreadPool(1);
 
-                    ScheduledExecutorService reloj = Executors.newScheduledThreadPool(1);
+                                    reloj.scheduleAtFixedRate(() -> {
+                                        dia++;
 
-                    reloj.scheduleAtFixedRate(() -> {
-                        dia++;
+                                        for (Activo activo : mercado.values()) {
+                                            activo.fluctuarPrecio(rand);
+                                        }
 
-                        for (Activo activo : mercado.values()) {
-                            activo.fluctuarPrecio(rand);
-                        }
+                                        System.out.println("\n-----------------------------------------------------------------------------");
+                                        System.out.println(" [MERCADO EN VIVO - DIA " + dia + " | USUARIO: " + usuarioActual + "]");
+                                        System.out.println("\n-----------------------------------------------------------------------------");
+                                        System.out.printf("BTC: $%.2f (%+.2f%%)  |  AAPL: $%.2f (%+.2f%%)  |  AMZN: $%.2f (%+.2f%%)\n",
+                                                mercado.get("b").getPrecio(),  mercado.get("b").getPorcentajeCambio()*100,
+                                                mercado.get("a").getPrecio(), mercado.get("a").getPorcentajeCambio()*100,
+                                                mercado.get("z").getPrecio(), mercado.get("z").getPorcentajeCambio()*100
+                                        );
 
-                        System.out.println("\n-----------------------------------------------------------------------------");
-                        System.out.println(" [MERCADO EN VIVO - DIA " + dia + " | USUARIO: " + usuarioActual + "]");
-                        System.out.println("\n-----------------------------------------------------------------------------");
-                        System.out.println("Precios Iniciales: ");
-                        System.out.println("BTC: 50000  | AAPL: 150  |    AMZN: 130");
-                        System.out.println("TSLA: 200 |  GOOG: 140  |    MSFT: 320");
-                        System.out.println("-----------------------------------------------------------------------------");
-                        System.out.printf("BTC: $%.2f (%+.2f%%)  |  AAPL: $%.2f (%+.2f%%)  |  AMZN: $%.2f (%+.2f%%)\n",
-                                mercado.get("b").getPrecio(),  mercado.get("b").getPorcentajeCambio()*100,
-                                mercado.get("a").getPrecio(), mercado.get("a").getPorcentajeCambio()*100,
-                                mercado.get("z").getPrecio(), mercado.get("z").getPorcentajeCambio()*100
-                        );
+                                        System.out.printf("TSLA: $%.2f (%+.2f%%) |  GOOG: $%.2f (%+.2f%%)  |  MSFT: $%.2f (%+.2f%%)\n",
+                                                mercado.get("t").getPrecio(), mercado.get("t").getPorcentajeCambio()*100,
+                                                mercado.get("g").getPrecio(), mercado.get("g").getPorcentajeCambio()*100,
+                                                mercado.get("m").getPrecio(), mercado.get("m").getPorcentajeCambio()*100
+                                        );
+                                        System.out.println("-----------------------------------------------------------------------------");
+                                        System.out.print("[MERCADO] Ingresa orden (ej: ct = comprar tesla, vz = vender amazon, p = portafolio, s = salir): ");
 
-                        System.out.printf("TSLA: $%.2f (%+.2f%%) |  GOOG: $%.2f (%+.2f%%)  |  MSFT: $%.2f (%+.2f%%)\n",
-                                mercado.get("t").getPrecio(), mercado.get("t").getPorcentajeCambio()*100,
-                                mercado.get("g").getPrecio(), mercado.get("g").getPorcentajeCambio()*100,
-                                mercado.get("m").getPrecio(), mercado.get("m").getPorcentajeCambio()*100
-                        );
-                        System.out.println("-----------------------------------------------------------------------------");
-                        System.out.print("[MERCADO] Ingresa orden (ej: ct = comprar tesla, vz = vender amazon, p = portafolio, s = salir): ");
+                                    }, 5, 30, TimeUnit.SECONDS);
 
-                    }, 5, 30, TimeUnit.SECONDS);
+                                    System.out.println("=================================================================");
+                                    System.out.println(" ACCESO CONCEDIDO - SIMULADOR ACTIVO ");
+                                    System.out.println("=================================================================");
+                                    System.out.println("[MERCADO] comandos: ct = comprar tesla, vz = vender amazon, p = portafolio, s = salir: ");
+                                    boolean activo = true;
+                                    while (activo) {
+                                        System.out.print("[MERCADO] Esperando orden: ");
+                                        String comando = teclado.nextLine().trim().toLowerCase();
 
-                    System.out.println("=================================================================");
-                    System.out.println(" ACCESS GRANTED - SIMULADOR ACTIVO ");
-                    System.out.println("=================================================================");
+                                        if (comando.length() >= 2 && (comando.startsWith("c") || comando.startsWith("v"))) {
+                                            char operacion = comando.charAt(0);
+                                            String ticker = comando.substring(1).replace("-", "");
 
-                    boolean activo = true;
-                    while (activo) {
-                        System.out.print("[MERCADO] Esperando orden: ");
-                        String comando = teclado.nextLine().trim().toLowerCase();
+                                            if (mercado.containsKey(ticker)) {
+                                                Activo seleccionado = mercado.get(ticker);
 
-                        if (comando.length() >= 2 && (comando.startsWith("c") || comando.startsWith("v"))) {
-                            char operacion = comando.charAt(0);
-                            String ticker = comando.substring(1).replace("-", "");
+                                                if (operacion == 'c') {
+                                                    if (saldoEfectivo >= seleccionado.getPrecio()) {
+                                                        saldoEfectivo -= seleccionado.getPrecio();
+                                                        seleccionado.setCantidad(seleccionado.getCantidad() + 1);
+                                                        System.out.printf(" Compraste 1 %s a $%.2f\n", seleccionado.getNombre(), seleccionado.getPrecio());
+                                                        guardarDatosUsuario();
+                                                    } else {
+                                                        System.out.println(" Saldo insuficiente.");
+                                                    }
+                                                } else {
+                                                    if (seleccionado.getCantidad() > 0) {
+                                                        seleccionado.setCantidad(seleccionado.getCantidad() - 1);
+                                                        saldoEfectivo += seleccionado.getPrecio();
+                                                        System.out.printf(" Vendiste 1 %s por $%.2f\n", seleccionado.getNombre(), seleccionado.getPrecio());
+                                                        guardarDatosUsuario();
+                                                    } else {
+                                                        System.out.println(" No tienes este activo en tu portafolio.");
+                                                    }
+                                                }
+                                                continue;
+                                            }
+                                        }
 
-                            if (mercado.containsKey(ticker)) {
-                                Activo seleccionado = mercado.get(ticker);
+                                        switch (comando) {
+                                            case "p" -> {
+                                                System.out.println("\n=================================================================");
+                                                System.out.println("  REPORTE INTEGRAL DE PORTAFOLIO (ANÁLISIS DE OBJETOS)");
+                                                System.out.println("=================================================================");
+                                                System.out.printf(" Cash Disponible: $%.2f\n", saldoEfectivo);
+                                                System.out.println(" Activos en Propiedad:");
 
-                                if (operacion == 'c') {
-                                    if (saldoEfectivo >= seleccionado.getPrecio()) {
-                                        saldoEfectivo -= seleccionado.getPrecio();
-                                        seleccionado.setCantidad(seleccionado.getCantidad() + 1);
-                                        System.out.printf(" Compraste 1 %s a $%.2f\n", seleccionado.getNombre(), seleccionado.getPrecio());
-                                        guardarDatosUsuario();
-                                    } else {
-                                        System.out.println(" Saldo insuficiente.");
+                                                double valorAcciones = 0;
+                                                for (Activo act : mercado.values()) {
+                                                    if (act.getCantidad() > 0) {
+                                                        System.out.printf("  %s: %d unidades (Valor actual: $%.2f)\n", act.getNombre(), act.getCantidad(), act.getValorInvertido());
+                                                        valorAcciones += act.getValorInvertido();
+                                                    }
+                                                }
+                                                System.out.printf("\n  VALOR NETO DE TU PATRIMONIO: $%.2f\n", (saldoEfectivo + valorAcciones));
+                                                System.out.println("=================================================================");
+                                            }
+                                            case "s" -> {
+                                                activo = false;
+                                                guardarDatosUsuario();
+                                                System.out.println("\n[SISTEMA]: Datos guardados. Cerrando el mercado...");
+                                            }
+                                            default -> {
+                                                if(!mercado.containsKey(comando.substring(Math.min(comando.length(), 1)))){
+                                                    System.out.println(" Comando invalido.");
+                                                }
+                                            }
+                                        }
                                     }
-                                } else {
-                                    if (seleccionado.getCantidad() > 0) {
-                                        seleccionado.setCantidad(seleccionado.getCantidad() - 1);
-                                        saldoEfectivo += seleccionado.getPrecio();
-                                        System.out.printf(" Vendiste 1 %s por $%.2f\n", seleccionado.getNombre(), seleccionado.getPrecio());
-                                        guardarDatosUsuario();
-                                    } else {
-                                        System.out.println(" No tienes este activo en tu portafolio.");
-                                    }
-                                }
-                                continue;
+                                    reloj.shutdown();
+                                
+                                break;
                             }
-                        }
-
-                        switch (comando) {
-                            case "p" -> {
-                                System.out.println("\n=================================================================");
-                                System.out.println("  REPORTE INTEGRAL DE PORTAFOLIO (ANÁLISIS DE OBJETOS)");
-                                System.out.println("=================================================================");
-                                System.out.printf(" Cash Disponible: $%.2f\n", saldoEfectivo);
-                                System.out.println(" Activos en Propiedad:");
-
-                                double valorAcciones = 0;
-                                for (Activo act : mercado.values()) {
-                                    if (act.getCantidad() > 0) {
-                                        System.out.printf("  %s: %d unidades (Valor actual: $%.2f)\n", act.getNombre(), act.getCantidad(), act.getValorInvertido());
-                                        valorAcciones += act.getValorInvertido();
-                                    }
-                                }
-                                System.out.printf("\n  VALOR NETO DE TU PATRIMONIO: $%.2f\n", (saldoEfectivo + valorAcciones));
-                                System.out.println("=================================================================");
-                            }
-                            case "s" -> {
-                                activo = false;
-                                guardarDatosUsuario();
-                                System.out.println("\n[SISTEMA]: Datos guardados. Cerrando el mercado...");
+                            case "2" -> {
+                                verInformacionUsuario(teclado);
+                                break;
                             }
                             default -> {
-                                if(!mercado.containsKey(comando.substring(Math.min(comando.length(), 1)))){
-                                    System.out.println(" Comando invalido.");
-                                }
+                                System.out.println("Opcion no valida");
+                                break;
                             }
-                        }
                     }
-                    reloj.shutdown();
-                }
+                }while(!opcion.equals("0"));
 
-                case "2" -> {
-                    verInformacionUsuario(teclado);
-                    break;
-                }
-                case "3" -> {
-                    RegistrarUsuario(teclado);
-                    break;
-                }
+            }
                 default -> {
                     System.out.println("Opcion no valida. Intente de nuevo");
                     break;
@@ -228,47 +231,6 @@ public class ventasDeAcciones {
         }while(!opc.equals("0"));
     }
 
-    private void RegistrarUsuario(Scanner teclado){
-        File archivo = new File(ARCHIVO_DB);
-        if (!archivo.exists()) {
-            System.out.println("[SISTEMA]: Registro inicial requerido.");
-            System.out.print(" Asigne una contraseña: ");
-            this.passwordActual = teclado.nextLine().trim();
-            return;
-        }
-
-        System.out.print("[SISTEMA]: Desea crear un nuevo usario? (1=si/0=no): ");
-        String respuesta = teclado.nextLine().trim();
-        switch (respuesta) {
-            case "1" -> {
-                System.out.print("Ingrese un usuario: ");
-                this.usuarioActual = teclado.nextLine().trim();
-                System.out.print("Ingrese una contraseña: ");
-                this.passwordActual = teclado.nextLine().trim();
-                guardarDatosUsuario();
-                return;
-            }
-            case "0" -> {
-                System.out.println("Saliendo al menu principal. . .");
-                return;
-            }
-            default -> System.out.println("Opcion no valida");
-        }
-
-        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                String[] datos = linea.split(",");
-                if (datos[0].equals(usuarioActual) ) {
-                    System.out.println("Nombre de usuario no disponible");
-                    System.out.println("Saliendo al menu principal. . .");
-                    return;
-                }
-            }
-            RegistrarUsuario(teclado);
-
-        } catch (IOException e){}
-    }
 
     private boolean autenticarUsuario(Scanner teclado) {
         File archivo = new File(ARCHIVO_DB);
@@ -314,18 +276,12 @@ public class ventasDeAcciones {
         }
 
         System.out.println("\n=================================================================");
-        System.out.print(" Ingrese el nombre del usuario que desea consultar: ");
-        String usuarioBuscar = teclado.nextLine().trim().toLowerCase();
-        System.out.print(" Ingrese la contraseña: ");
-        String contrasenaBuscar = teclado.nextLine().trim().toLowerCase();
-        boolean validador = false;
 
         try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
             String linea;
             while ((linea = br.readLine()) != null) {
                 String[] datos = linea.split(",");
 
-                if (datos[0].equals(usuarioBuscar) && datos[1].equals(contrasenaBuscar)) {
                     System.out.println("=================================================================");
                     System.out.println("  EXTRACTO INFORMATIVO DE BASE DE DATOS");
                     System.out.println("=================================================================");
@@ -340,14 +296,6 @@ public class ventasDeAcciones {
                     System.out.println("   GOOG: " + datos[7] + " unidades");
                     System.out.println("   MSFT: " + datos[8] + " unidades");
                     System.out.println("=================================================================");
-                    validador = true;
-                    break;
-                }if(!datos[0].equals(usuarioBuscar) || !datos[1].equals(contrasenaBuscar)){
-                    validador = false;
-                }
-            }
-            if (!validador) {
-                System.out.println("Error. Credenciales invalidas");
             }
 
         } catch (IOException e) {
