@@ -7,7 +7,8 @@ import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
+/*Clase principal, aqui se asigna las variables que tendra cada una de las acciones
+y se especifica que se hara con cada una de ellas */
 public class ventasDeAcciones {
 
     private static class Activo {
@@ -57,6 +58,9 @@ public class ventasDeAcciones {
     private double saldoEfectivo = 10000.0;
     private int dia = 0;
 
+/* Creacion de un "Diccionario" almacenamiento de las acciones con una estructura de datos,
+un mapa para contener a las acciones con un identificador unico*/
+
     private final Map<String, Activo> mercado = new HashMap<>();
     private final String ARCHIVO_DB = "usuarios.txt";
 
@@ -68,7 +72,7 @@ public class ventasDeAcciones {
         mercado.put("g", new Activo("Google", 140.0, 2.5));
         mercado.put("m", new Activo("Microsoft", 320.0, 2.0));
     }
-
+    
     public void iniciarSimulador() {
         String opc;
         Scanner teclado = new Scanner(System.in);
@@ -109,6 +113,8 @@ public class ventasDeAcciones {
                         switch(opcion){
                             case "0" -> {System.out.println("Saliendo al menu anterior. . ."); break;}
                             case "1" -> {
+                                /*Inicio de hilo parte principal del juego, el hilo es un temporizador en segundo plano que actualiza los precios de las acciones
+                                en timepo real sin necesidad de congelar el tecado*/
                                     ScheduledExecutorService reloj = Executors.newScheduledThreadPool(1);
 
                                     reloj.scheduleAtFixedRate(() -> {
@@ -136,6 +142,7 @@ public class ventasDeAcciones {
                                         System.out.print("[MERCADO] Ingresa orden (ej: ct = comprar tesla, vz = vender amazon, p = portafolio, s = salir): ");
 
                                     }, 5, 30, TimeUnit.SECONDS);
+                                    /*Fin del hilo y comienzo de verficacion del comando que el usuario ingresa*/
 
                                     System.out.println("=================================================================");
                                     System.out.println(" ACCESO CONCEDIDO - SIMULADOR ACTIVO ");
@@ -231,6 +238,8 @@ public class ventasDeAcciones {
         }while(!opc.equals("0"));
     }
 
+    /*Metodos complementarios para lectura y escritura de archivo.txt,
+    para guardar el progreso del usuario asi como sus datos del portafolio */
 
     private boolean autenticarUsuario(Scanner teclado) {
         File archivo = new File(ARCHIVO_DB);
